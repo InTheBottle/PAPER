@@ -45,10 +45,10 @@ RE::BSEventNotifyControl OnHitEventHandler::ProcessEvent(const RE::TESHitEvent* 
                 auto vm = RE::SkyrimVM::GetSingleton();
 
                 if (vm) {
-                    const auto handle =
-                        vm->handlePolicy.GetHandleForObject(static_cast<RE::VMTypeID>(targetFormType), target);
+                    const auto handle = vm->GetVMRuntimeData().handlePolicy.GetHandleForObject(
+                        static_cast<RE::VMTypeID>(targetFormType), target);
 
-                    if (handle && handle != vm->handlePolicy.EmptyHandle()) {
+                    if (handle && handle != vm->GetVMRuntimeData().handlePolicy.EmptyHandle()) {
                         const auto aggressor = a_event->cause.get();
                         const auto source = RE::TESForm::LookupByID(a_event->source);
                         const auto projectile = RE::TESForm::LookupByID<RE::BGSProjectile>(a_event->projectile);

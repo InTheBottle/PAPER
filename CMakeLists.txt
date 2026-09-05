@@ -45,29 +45,41 @@ source_group(
 message("Options:")
 
 ########################################################################################################################
+## Configure CommonLibSSE-NG
+########################################################################################################################
+set(COMMONLIBSSE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/extern/CommonLibSSE-NG")
+
+if(NOT EXISTS "${COMMONLIBSSE_DIR}/CMakeLists.txt")
+    message(FATAL_ERROR
+            "The CommonLibSSE-NG submodule is missing. Run:\n"
+            "    git submodule update --init --recursive")
+endif()
+
+set(BUILD_TESTS OFF CACHE BOOL "Build the CommonLibSSE unit tests." FORCE)
+set(ENABLE_SKYRIM_SE ON CACHE BOOL "Support Skyrim SE (1.5.x)." FORCE)
+set(ENABLE_SKYRIM_AE ON CACHE BOOL "Support Skyrim AE (1.6.x)." FORCE)
+set(ENABLE_SKYRIM_VR ON CACHE BOOL "Support Skyrim VR (1.4.15)." FORCE)
+
+add_subdirectory("${COMMONLIBSSE_DIR}" CommonLibSSE EXCLUDE_FROM_ALL)
+include("${COMMONLIBSSE_DIR}/cmake/CommonLibSSE.cmake")
+
+########################################################################################################################
 ## Configure target DLL
 ########################################################################################################################
-find_package(CommonLibSSE CONFIG REQUIRED)
-find_package(ryml CONFIG REQUIRED)
-find_path(ARTICUNO_INCLUDE_DIRS "articuno/articuno.h")
-
-add_commonlibsse_plugin(${PROJECT_NAME} SOURCES ${sources})
+add_commonlibsse_plugin(${PROJECT_NAME}
+        SOURCES ${sources}
+        USE_ADDRESS_LIBRARY)
 add_library("${PROJECT_NAME}::${PROJECT_NAME}" ALIAS "${PROJECT_NAME}")
 
 target_include_directories(${PROJECT_NAME}
         PRIVATE
         $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/src>
         $<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}/src>
-        $<INSTALL_INTERFACE:src>
-        ${ARTICUNO_INCLUDE_DIRS})
+        $<INSTALL_INTERFACE:src>)
 
 target_include_directories(${PROJECT_NAME}
         PUBLIC
         $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>)
-
-target_link_libraries(${PROJECT_NAME}
-        PRIVATE
-        ryml::ryml)
 
 target_precompile_headers(${PROJECT_NAME}
         PRIVATE

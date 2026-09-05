@@ -6,13 +6,6 @@ namespace OnContainerChangedEvents {
 #pragma warning(push)
 #pragma warning(disable : 4251)
 
-    // Retrieve manual offset for edge cases CLIB-NG does not account for yet
-    // Thanks to Nightfallstorm!
-    template <class T>
-    T GetManualRelocateMemberVariable(void* object, REL::VariantOffset offset) {
-        return *(reinterpret_cast<T*>((uintptr_t)object + offset.offset()));
-    }
-
     /** 
      * Data for an event to be processed.
      */
@@ -101,16 +94,11 @@ namespace OnContainerChangedEvents {
 
         virtual bool matchesFilter(RE::VMHandle handle) override {
             auto vm = RE::SkyrimVM::GetSingleton();
+            if (!vm) {
+                return true;
+            }
 
-            //const auto& constInventoryEventFilterMapLock =
-            //    GetManualRelocateMemberVariable<RE::BSSpinLock>(vm, REL::VariantOffset(0x8940, 0x8940, 0x8960));
-
-            //auto& inventoryEventFilterMapLock = const_cast<RE::BSSpinLock&>(constInventoryEventFilterMapLock);
-            //RE::BSSpinLockGuard locker(inventoryEventFilterMapLock);
-
-            const auto& inventoryEventFilterMap =
-                GetManualRelocateMemberVariable<RE::BSTHashMap<RE::VMHandle, RE::SkyrimVM::InventoryEventFilterLists*>>(
-                    vm, REL::VariantOffset(0x8948, 0x8948, 0x8968));
+            const auto& inventoryEventFilterMap = vm->GetRuntimeData2().InventoryEventFilterMap;
 
             RE::SkyrimVM::InventoryEventFilterLists* filterLists = nullptr;
             auto it = inventoryEventFilterMap.find(handle);
